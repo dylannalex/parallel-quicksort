@@ -4,6 +4,7 @@ import random
 
 
 PQUICKSORT_PATH = "pquicksort/./pquicksort"
+QUICKSORT_PATH = "pquicksort/./quicksort"
 RANDOM_FILE_BUFFER = "random_array_buffer.txt"
 
 
@@ -17,8 +18,17 @@ def generate_random_array(path_to_file, min_, max_, array_size):
 
 def run_pquicksort(number_of_subprocesses, path_to_file):
     # type: (str, int) -> None
+    print("\n\nRunning parallel algorithm.")
     args = (number_of_subprocesses, PQUICKSORT_PATH, path_to_file)
     command = "mpirun -n %s %s %s" % args
+    os.system(command)
+
+
+def run_quicksort(path_to_file):
+    # type: (str) -> None
+    print("\n\nRunning sequential algorithm.")
+    args = (QUICKSORT_PATH, path_to_file)
+    command = "mpirun -n 1 %s %s" % args
     os.system(command)
 
 
@@ -53,6 +63,7 @@ def random_command(arguments):
         array_size = int(argument)
         execution_log(i, min_, max_, array_size)
         generate_random_array(RANDOM_FILE_BUFFER, min_, max_, array_size)
+        run_quicksort(RANDOM_FILE_BUFFER)
         run_pquicksort(number_of_subprocesses, RANDOM_FILE_BUFFER)
 
 
@@ -66,6 +77,7 @@ def custom_command(arguments):
     """
     path_to_file = arguments[2]
     number_of_subprocesses = int(arguments[3])
+    run_quicksort(path_to_file)
     run_pquicksort(number_of_subprocesses, path_to_file)
 
 
