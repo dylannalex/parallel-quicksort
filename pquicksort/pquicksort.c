@@ -12,7 +12,7 @@
 #define SMALLER_SIZE_TAG 3
 #define SMALLER_TAG 4
 
-#define DEFAULT_FILE_NAME "array.txt"
+#define DEFAULT_PATH_TO_FILE "array.txt"
 
 int MY_ID, NPROC;
 
@@ -226,9 +226,9 @@ void sort_array(int array[], int array_size, int sorted_array[], int depth)
     }
 }
 
-void read_file(int **pointer_to_array, int *array_size)
+void read_file(char *path_to_file, int **pointer_to_array, int *array_size)
 {
-    FILE *file = fopen(DEFAULT_FILE_NAME, "r");
+    FILE *file = fopen(path_to_file, "r");
 
     int i = 0;
     int num;
@@ -255,6 +255,13 @@ void read_file(int **pointer_to_array, int *array_size)
 
 int main(int argc, char **argv)
 {
+    /*
+    Executed by command:
+
+    mpirun -n <number_of_processes> ./pquicksort <array file>
+
+    If no array file is given, reads "array.txt" file.
+    */
     MPI_Status status;
 
     MPI_Init(&argc, &argv);
@@ -263,11 +270,21 @@ int main(int argc, char **argv)
 
     if (MY_ID == 0)
     {
-        // Reads array from array.txt file
+        // Reads array from the given file
         int array_size;
+        char *path_to_file;
         int **pointer_to_array = malloc(sizeof(int));
 
-        read_file(pointer_to_array, &array_size);
+        if (argc > 1)
+        {
+            path_to_file = argv[1];
+        }
+        else
+        {
+            path_to_file = DEFAULT_PATH_TO_FILE;
+        }
+
+        read_file(path_to_file, pointer_to_array, &array_size);
 
         // Sorts array
         int *array = *pointer_to_array;
@@ -278,8 +295,7 @@ int main(int argc, char **argv)
 
         sort_array(array, array_size, sorted_array, 0);
 
-        // Print array and sorted array
-
+        // Prints array and sorted array
         printf("sorted array: ");
         print_array(sorted_array, array_size);
 
