@@ -122,17 +122,34 @@ void read_file(char *path_to_file, int **pointer_to_array, int *array_size)
 
 int main(int argc, char **argv)
 {
+    /*
+    Executed by command:
+
+    mpirun -n <number_of_processes> ./quicksort <path_to_file> <show_arrays>
+
+    - <path_to_file>: path to array file. defaults to 'array.txt'
+    - <show_arrays>: optional integer that indicates if unsorted and sorted arrays
+                    are shown after execution. If 0 (false) arrays are not printed,
+                    otherwise they are. Defaults to 1 (true).
+    */
 
     MPI_Init(&argc, &argv);
 
-    // Reads array from the given file
     int array_size;
+    int show_arrays;
     char *path_to_file;
     int **pointer_to_array = malloc(sizeof(int));
 
-    if (argc > 1)
+    // Reads command line arguments
+    if (argc == 2)
     {
         path_to_file = argv[1];
+        show_arrays = 0;
+    }
+    else if (argc == 3)
+    {
+        path_to_file = argv[1];
+        show_arrays = atoi(argv[2]);
     }
     else
     {
@@ -149,11 +166,14 @@ int main(int argc, char **argv)
     sort_array(array, array_size, sorted_array);
     double end_time = MPI_Wtime();
 
-    printf("array: ");
-    print_array(array, array_size);
-    printf("sorted array: ");
-    print_array(array, array_size);
-    printf("run time: %f\n", end_time - start_time);
+    if (show_arrays)
+    {
+        printf("\narray: ");
+        print_array(array, array_size);
+        printf("\nsorted array: ");
+        print_array(array, array_size);
+    }
+    printf("\nrun time: %f\n", end_time - start_time);
 
     MPI_Finalize();
     return 0;
