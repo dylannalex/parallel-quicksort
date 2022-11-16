@@ -69,8 +69,8 @@ int combine_arrays(int arr1[], int arr1_size, int arr2[], int arr2_size, int arr
 
 int sort_array(int unsorted_array[], int array_size, int sorted_array[])
 {
-    int smaller[array_size];
-    int greater[array_size];
+    int *smaller = malloc(sizeof(int) * array_size);
+    int *greater = malloc(sizeof(int) * array_size);
     int smaller_size, greater_size;
     int pivot;
 
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 
     // Sorts array
     int *array = *pointer_to_array;
-    int sorted_array[array_size];
+    int *sorted_array = malloc(sizeof(int) * array_size);
 
     double start_time = MPI_Wtime();
     sort_array(array, array_size, sorted_array);

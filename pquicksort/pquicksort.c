@@ -86,7 +86,7 @@ void send_partitions(int array[],
 {
     int array_index = 0;
     int element, node;
-    int partition[partitions_size];
+    int *partition = malloc(sizeof(int) * partitions_size);
 
     for (node = 0; node < number_of_nodes; node++)
     {
@@ -138,11 +138,11 @@ void receive_greater_smaller(
     {
         // Receive smaller array from worker
         MPI_Recv(&worker_smaller_size, 1, MPI_INT, worker_id, SMALLER_SIZE_TAG, MPI_COMM_WORLD, &status);
-        int worker_smaller[worker_smaller_size];
+        int *worker_smaller = malloc(sizeof(int) * worker_smaller_size);
         MPI_Recv(worker_smaller, worker_smaller_size, MPI_INT, worker_id, SMALLER_TAG, MPI_COMM_WORLD, &status);
         // Receive greater array from worker
         MPI_Recv(&worker_greater_size, 1, MPI_INT, worker_id, GREATER_SIZE_TAG, MPI_COMM_WORLD, &status);
-        int worker_greater[worker_greater_size];
+        int *worker_greater = malloc(sizeof(int) * worker_greater_size);
         MPI_Recv(worker_greater, worker_greater_size, MPI_INT, worker_id, GREATER_TAG, MPI_COMM_WORLD, &status);
 
         // Append smaller elements found
@@ -176,17 +176,17 @@ int get_partition_size(int array_size, int number_of_nodes)
 
 void sort_array(int array[], int array_size, int sorted_array[], int depth)
 {
-    int smaller[array_size];
-    int greater[array_size];
+    int *smaller = malloc(sizeof(int) * array_size);
+    int *greater = malloc(sizeof(int) * array_size);
     int smaller_size, greater_size;
     int partition_size;
     int pivot;
 
     partition_size = get_partition_size(array_size - 1, NPROC);
 
-    int master_partition[partition_size];
-    int master_smaller[partition_size];
-    int master_greater[partition_size];
+    int *master_partition = malloc(sizeof(int) * partition_size);
+    int *master_smaller = malloc(sizeof(int) * partition_size);
+    int *master_greater = malloc(sizeof(int) * partition_size);
     int master_smaller_size, master_greater_size;
 
     // Send pivot and number of elements
@@ -216,9 +216,11 @@ void sort_array(int array[], int array_size, int sorted_array[], int depth)
     }
 
     // Combine arrays:
-    int smaller_with_pivot[smaller_size + 1];
+    int *smaller_with_pivot = malloc(sizeof(int) * (smaller_size + 1));
     combine_arrays(smaller, smaller_size, &pivot, 1, smaller_with_pivot);
     combine_arrays(smaller_with_pivot, smaller_size + 1, greater, greater_size, sorted_array);
+
+    printf("depth=%d\n", depth);
 
     // End workers
     if (depth == 0 && NPROC > 1)
@@ -300,7 +302,7 @@ int main(int argc, char **argv)
 
         // Sorts array
         int *array = *pointer_to_array;
-        int sorted_array[array_size];
+        int *sorted_array = malloc(sizeof(int) * array_size);
 
         double start_time = MPI_Wtime();
         sort_array(array, array_size, sorted_array, 0);
@@ -335,11 +337,11 @@ int main(int argc, char **argv)
             MPI_Bcast(&partition_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
             // Obtains partition values
-            int partition[partition_size];
+            int *partition = malloc(sizeof(int) * partition_size);
             MPI_Recv(partition, partition_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-            int smaller[partition_size];
-            int greater[partition_size];
+            int *smaller = malloc(sizeof(int) * partition_size);
+            int *greater = malloc(sizeof(int) * partition_size);
             int smaller_size, greater_size;
 
             get_smaller_greater(partition, partition_size, smaller, &smaller_size, greater, &greater_size, pivot);
